@@ -16,6 +16,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -24,6 +26,9 @@ class VetControllerTest {
 
     @Mock
     private ClinicService clinicService;
+
+    @Mock
+    private HashMap<String, Object> model;
 
     @InjectMocks
     private VetController controller;
@@ -35,11 +40,12 @@ class VetControllerTest {
 
 
         //when:
-        String templateName = this.controller.showVetList(new HashMap<>());
+        String templateName = this.controller.showVetList(model);
 
         //then:
-        assertThat(templateName).isEqualTo("vets/vetList");
         then(this.clinicService).should().findVets();
+        then(this.model).should().put(anyString(), any());
+        assertThat("vets/vetList").isEqualTo(templateName);
     }
 
     @Test
@@ -52,8 +58,8 @@ class VetControllerTest {
         Vets vets = this.controller.showResourcesVetList();
 
         //then:
+        then(this.clinicService).should().findVets();
         assertThat(vets).isNotNull();
         assertThat(vets.getVetList()).hasSize(2);
-        then(this.clinicService).should().findVets();
     }
 }
