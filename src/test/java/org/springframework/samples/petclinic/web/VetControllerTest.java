@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.samples.petclinic.model.Vet;
+import org.springframework.samples.petclinic.model.Vets;
 import org.springframework.samples.petclinic.service.ClinicService;
 
 import java.util.HashMap;
@@ -43,5 +44,16 @@ class VetControllerTest {
 
     @Test
     void showResourcesVetList() {
+        //given:
+        given(this.clinicService.findVets()).willReturn(List.of(new Vet(), new Vet()));
+
+
+        //when:
+        Vets vets = this.controller.showResourcesVetList();
+
+        //then:
+        assertThat(vets).isNotNull();
+        assertThat(vets.getVetList()).hasSize(2);
+        then(this.clinicService).should().findVets();
     }
 }
