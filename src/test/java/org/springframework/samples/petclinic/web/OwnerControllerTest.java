@@ -18,11 +18,12 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.reset;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,6 +49,37 @@ class OwnerControllerTest {
     @AfterEach
     void tearDown() {
         reset(this.clinicService);
+    }
+
+    @Test
+    void testNewOwnerPostValid() throws Exception {
+        willAnswer(invocation ->{
+            Owner owner = invocation.getArgument(0);
+            owner.setId(1);
+            return null;
+        }).given(this.clinicService).saveOwner(any(Owner.class));
+        this.mockMvc.perform(post("/owners/new")
+                        .param("firstName", "John")
+                        .param("lastName", "Foo")
+                        .param("address", "123 Key West Florida")
+                        .param("city","Key West")
+                        .param("telephone", "123123123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/owners/1"));
+    }
+
+    @Test
+    void testNewOwnerPostNoyValid() throws Exception {
+        this.mockMvc.perform(post("/owners/new")
+                .param("firstName", "John")
+                .param("lastName", "Foo")
+                .param("city","Key West"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeHasErrors("owner"))
+                .andExpect(model().attributeHasFieldErrors("owner", "address"))
+                .andExpect(model().attributeHasFieldErrors("owner", "telephone"))
+                .andExpect(view().name("owners/createOrUpdateOwnerForm"));
+        then(this.clinicService).should(never()).saveOwner(any(Owner.class));
     }
 
     @Test
