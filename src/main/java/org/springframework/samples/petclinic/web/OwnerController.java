@@ -118,7 +118,7 @@ public class OwnerController {
         } else {
             owner.setId(ownerId);
             this.clinicService.saveOwner(owner);
-            return "redirect:/owners/{ownerId}";
+            return "redirect:/owners/"+ownerId;
         }
     }
 

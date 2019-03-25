@@ -133,4 +133,35 @@ class OwnerControllerTest {
                 .andExpect(model().attributeExists("owner"))
                 .andExpect(view().name("owners/createOrUpdateOwnerForm"));
     }
+
+    @Test
+    void testUpdateValidOwner() throws Exception {
+        willAnswer(invocation ->{
+            Owner owner = invocation.getArgument(0);
+            owner.setId(1);
+            return null;
+        }).given(this.clinicService).saveOwner(any(Owner.class));
+        this.mockMvc.perform(post("/owners/1/edit")
+                .param("firstName", "John")
+                .param("lastName", "Foo")
+                .param("address", "123 Key West Florida")
+                .param("city","Key West")
+                .param("telephone", "123123123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/owners/1"));
+    }
+
+    @Test
+    void testUpdateInvalidOwner() throws Exception {
+        this.mockMvc.perform(post("/owners/1/edit")
+                .param("firstName", "John")
+                .param("lastName", "Foo")
+                .param("city","Key West"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeHasErrors("owner"))
+                .andExpect(model().attributeHasFieldErrors("owner", "address"))
+                .andExpect(model().attributeHasFieldErrors("owner", "telephone"))
+                .andExpect(view().name("owners/createOrUpdateOwnerForm"));
+        then(this.clinicService).should(never()).saveOwner(any(Owner.class));
+    }
 }
